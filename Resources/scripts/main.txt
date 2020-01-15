@@ -1,0 +1,434 @@
+on init
+  declare $concat_it
+  declare $concat_offset
+  declare $string_it
+  declare $list_it
+  make_perfview
+  declare @bg
+  @bg := "1.png"
+  set_control_par_str($INST_WALLPAPER_ID,$CONTROL_PAR_PICTURE,@bg)
+  set_control_par_str($INST_ICON_ID,$CONTROL_PAR_PICTURE,"icon_game")
+  declare ui_label $background(1, 1) 
+  set_control_par_str(get_ui_id($background),$CONTROL_PAR_PICTURE,@bg)
+  set_control_par(get_ui_id($background),$CONTROL_PAR_POS_X,0)
+  set_control_par(get_ui_id($background),$CONTROL_PAR_POS_Y,0)
+  set_control_par_str(get_ui_id($background),$CONTROL_PAR_TEXT,"")
+  if (1=0)
+    hide_part($background,$HIDE_PART_BG)
+  end if
+  if (0>0 and (0>0))
+    set_control_par(get_ui_id($background),$CONTROL_PAR_WIDTH,0)
+    set_control_par(get_ui_id($background),$CONTROL_PAR_HEIGHT,0)
+  end if
+  message("")
+  set_ui_height_px(400)
+  declare $can_move_up := 1
+  declare $can_move_down := 1
+  declare $can_move_left := 1
+  declare $can_move_right := 1
+  declare $bullet_trace := 0
+  declare $can_shoot_up := 1
+  declare $can_shoot_down := 1
+  declare $can_shoot_left := 1
+  declare $can_shoot_right := 1
+  declare $shooting := 0
+  declare ui_label $bullet(1, 1) 
+  set_text($bullet,"")
+  move_control_px($bullet,450,633)
+  set_control_par(get_ui_id($bullet),$CONTROL_PAR_WIDTH,6)
+  set_control_par(get_ui_id($bullet),$CONTROL_PAR_HEIGHT,6)
+  set_control_par_str(get_ui_id($bullet),$CONTROL_PAR_PICTURE,"bullet")
+  declare $blinks := 0
+  declare $fruitY := 0
+  declare $fruitX := 0
+  declare ui_switch $fruit
+  set_text($fruit," ")
+  move_control_px($fruit,450,633)
+  hide_part($fruit,$HIDE_PART_BG .or. $HIDE_PART_MOD_LIGHT .or. $HIDE_PART_TITLE .or. $HIDE_PART_VALUE)
+  set_control_par(get_ui_id($fruit),$CONTROL_PAR_WIDTH,16)
+  set_control_par(get_ui_id($fruit),$CONTROL_PAR_HEIGHT,16)
+  set_control_par_str(get_ui_id($fruit),$CONTROL_PAR_PICTURE,"fruit")
+  declare ui_switch $bomb
+  declare $bombs := 1
+  declare $bombX := 0
+  declare $bombY := 0
+  set_text($bomb," ")
+  move_control_px($bomb,450,633)
+  hide_part($bomb,$HIDE_PART_BG .or. $HIDE_PART_MOD_LIGHT .or. $HIDE_PART_TITLE .or. $HIDE_PART_VALUE)
+  set_control_par(get_ui_id($bomb),$CONTROL_PAR_WIDTH,16)
+  set_control_par(get_ui_id($bomb),$CONTROL_PAR_HEIGHT,16)
+  set_control_par_str(get_ui_id($bomb),$CONTROL_PAR_PICTURE,"bomb")
+  declare $count := 24
+  declare $start_stop := 0
+  declare $gameX := 150
+  declare $gameY := 250
+  declare $speed := 5000
+  declare $placar := 0
+  declare $perdas := 0
+  declare $level := 1
+  declare ui_label $label_placar(1, 1) 
+  set_control_par_str(get_ui_id($label_placar),$CONTROL_PAR_PICTURE,"")
+  set_control_par(get_ui_id($label_placar),$CONTROL_PAR_POS_X,10)
+  set_control_par(get_ui_id($label_placar),$CONTROL_PAR_POS_Y,10)
+  set_control_par_str(get_ui_id($label_placar),$CONTROL_PAR_TEXT,"Placar: " & $placar)
+  if (0=0)
+    hide_part($label_placar,$HIDE_PART_BG)
+  end if
+  if (0>0 and (0>0))
+    set_control_par(get_ui_id($label_placar),$CONTROL_PAR_WIDTH,0)
+    set_control_par(get_ui_id($label_placar),$CONTROL_PAR_HEIGHT,0)
+  end if
+  declare ui_label $label_losts(1, 1) 
+  set_control_par_str(get_ui_id($label_losts),$CONTROL_PAR_PICTURE,"")
+  set_control_par(get_ui_id($label_losts),$CONTROL_PAR_POS_X,60)
+  set_control_par(get_ui_id($label_losts),$CONTROL_PAR_POS_Y,10)
+  set_control_par_str(get_ui_id($label_losts),$CONTROL_PAR_TEXT,"Perdas: " & $perdas)
+  if (0=0)
+    hide_part($label_losts,$HIDE_PART_BG)
+  end if
+  if (0>0 and (0>0))
+    set_control_par(get_ui_id($label_losts),$CONTROL_PAR_WIDTH,0)
+    set_control_par(get_ui_id($label_losts),$CONTROL_PAR_HEIGHT,0)
+  end if
+  declare ui_label $label_level(1, 1) 
+  set_control_par_str(get_ui_id($label_level),$CONTROL_PAR_PICTURE,"")
+  set_control_par(get_ui_id($label_level),$CONTROL_PAR_POS_X,545)
+  set_control_par(get_ui_id($label_level),$CONTROL_PAR_POS_Y,10)
+  set_control_par_str(get_ui_id($label_level),$CONTROL_PAR_TEXT,"Fase: " & $level)
+  if (0=0)
+    hide_part($label_level,$HIDE_PART_BG)
+  end if
+  if (0>0 and (0>0))
+    set_control_par(get_ui_id($label_level),$CONTROL_PAR_WIDTH,0)
+    set_control_par(get_ui_id($label_level),$CONTROL_PAR_HEIGHT,0)
+  end if
+  declare ui_label $over(1, 1) 
+  set_control_par_str(get_ui_id($over),$CONTROL_PAR_PICTURE,"")
+  set_control_par(get_ui_id($over),$CONTROL_PAR_POS_X,450)
+  set_control_par(get_ui_id($over),$CONTROL_PAR_POS_Y,633)
+  set_control_par_str(get_ui_id($over),$CONTROL_PAR_TEXT,"GAME OVER")
+  if (0=0)
+    hide_part($over,$HIDE_PART_BG)
+  end if
+  if (0>0 and (0>0))
+    set_control_par(get_ui_id($over),$CONTROL_PAR_WIDTH,0)
+    set_control_par(get_ui_id($over),$CONTROL_PAR_HEIGHT,0)
+  end if
+  declare ui_label $placar_final(1, 1) 
+  set_control_par_str(get_ui_id($placar_final),$CONTROL_PAR_PICTURE,"")
+  set_control_par(get_ui_id($placar_final),$CONTROL_PAR_POS_X,450)
+  set_control_par(get_ui_id($placar_final),$CONTROL_PAR_POS_Y,633)
+  set_control_par_str(get_ui_id($placar_final),$CONTROL_PAR_TEXT,"PLACAR: " & $placar)
+  if (0=0)
+    hide_part($placar_final,$HIDE_PART_BG)
+  end if
+  if (0>0 and (0>0))
+    set_control_par(get_ui_id($placar_final),$CONTROL_PAR_WIDTH,0)
+    set_control_par(get_ui_id($placar_final),$CONTROL_PAR_HEIGHT,0)
+  end if
+  declare ui_label $gamer(1, 1) 
+  set_control_par_str(get_ui_id($gamer),$CONTROL_PAR_PICTURE,"player")
+  set_control_par(get_ui_id($gamer),$CONTROL_PAR_POS_X,$gameX)
+  set_control_par(get_ui_id($gamer),$CONTROL_PAR_POS_Y,$gameY)
+  set_control_par_str(get_ui_id($gamer),$CONTROL_PAR_TEXT,"")
+  if (1=0)
+    hide_part($gamer,$HIDE_PART_BG)
+  end if
+  if (50>0 and (50>0))
+    set_control_par(get_ui_id($gamer),$CONTROL_PAR_WIDTH,50)
+    set_control_par(get_ui_id($gamer),$CONTROL_PAR_HEIGHT,50)
+  end if
+  set_listener($NI_SIGNAL_TIMER_MS,5000000)
+  set_key_color(48,$KEY_COLOR_RED)
+  while ($count<30)
+    set_key_color($count,$KEY_COLOR_ORANGE)
+    set_key_color($count+12,$KEY_COLOR_GREEN)
+    inc($count)
+  end while
+end on
+
+function game_over
+  $start_stop := 0
+  move_control_px($fruit,450,633)
+  set_text($placar_final,"PLACAR : " & $placar)
+  move_control_px($placar_final,320,200)
+  move_control_px($over,260,200)
+  $perdas := 0
+  $level := 1
+  $count := 1000
+  $bombs := 0
+  @bg := $level & ".png"
+  set_control_par_str(get_ui_id($background),$CONTROL_PAR_PICTURE,@bg)
+  play_note(113,127,0,800000)
+  fade_out(115,800000,1)
+  note_off($ALL_EVENTS)
+  set_text($label_losts,"Perdas: " & $perdas)
+  set_text($label_placar,"Placar: 0")
+  set_text($label_level,"Fase: " & $level)
+end function
+
+function add_bomb
+  if ($bombs=1)
+    $bombX := random(1,603)
+    $bombY := 0
+    move_control_px($bomb,$bombX,$bombY)
+    while ($bombY<390 and ($bombX<603) and ($bombX>0))
+      move_control_px($bomb,$bombX,$bombY)
+      if ($gameX+13-($bombX+8)<15 and ($gameX+13-($bombX+8)>-15) and ($gameY+25-($bombY+8)<25) and ($gameY+25-($bombY+8)>-25))
+        call game_over
+      end if
+      wait(2500-($level*150))
+      $bombX := $bombX+random(-1,1)
+      move_control_px($bomb,$bombX,$bombY)
+      if ($gameX+13-($bombX+8)<15 and ($gameX+13-($bombX+8)>-15) and ($gameY+25-($bombY+8)<25) and ($gameY+25-($bombY+8)>-25))
+        call game_over
+      end if
+      wait(2500-($level*150))
+      $bombY := $bombY+random(0,1)
+    end while
+    move_control_px($bomb,400,633)
+  end if
+end function
+
+function blink_fruit
+  $blinks := 0
+  while ($blinks<10)
+    $fruit := 1-$fruit
+    wait(500000-($level*50000))
+    inc($blinks)
+  end while
+  set_text($label_losts,"Perdas: " & $perdas)
+  if ($perdas>=5)
+    call game_over
+  end if
+end function
+
+function add_fruit
+  while ($count<1000)
+    $fruitX := random(1,603)
+    $fruitY := random(14,370)
+    inc($perdas)
+    move_control_px($fruit,$fruitX,$fruitY)
+    inc($count)
+    call blink_fruit
+  end while
+end function
+
+function check_colision
+  if ($gameX+13-($fruitX+8)<15 and ($gameX+13-($fruitX+8)>-15) and ($gameY+25-($fruitY+8)<25) and ($gameY+25-($fruitY+8)>-25))
+    $fruitX := 450
+    $fruitY := 633
+    play_note(108,127,0,-1)
+    inc($placar)
+    set_control_par_str(get_ui_id($gamer),$CONTROL_PAR_PICTURE,"player_fruit")
+    wait(120000)
+    dec($perdas)
+    set_text($label_placar,"Placar: " & $placar)
+    move_control_px($fruit,$fruitX,$fruitY)
+    set_control_par_str(get_ui_id($gamer),$CONTROL_PAR_PICTURE,"player")
+    if ($placar mod 10=0)
+      inc($level)
+      @bg := $level & ".png"
+      set_control_par_str(get_ui_id($background),$CONTROL_PAR_PICTURE,@bg)
+      play_note(110,127,0,200000)
+      set_text($label_level,"Fase: " & $level)
+    end if
+  end if
+end function
+
+on listener
+  if ($NI_SIGNAL_TYPE=$NI_SIGNAL_TIMER_MS and ($start_stop=1))
+    call add_bomb
+  end if
+end on
+
+on note
+  message("note" & $EVENT_NOTE)
+  $gamer := 0
+  if ($EVENT_NOTE=48)
+    $start_stop := 1-$start_stop
+    if ($start_stop=1)
+      play_note(115,127,0,0)
+      fade_in(115,500000)
+      move_control_px($over,450,633)
+      move_control_px($placar_final,450,633)
+      $perdas := 0
+      $count := 0
+      $bombs := 1
+      call add_fruit
+    else
+      $count := 1000
+      $placar := 0
+      $perdas := 0
+      $level := 1
+      set_text($label_losts,"Perdas: " & $perdas)
+      set_text($label_level,"Fase: " & $level)
+      set_text($label_placar,"Placar: " & $placar)
+      fade_out(115,800000,1)
+      note_off($ALL_EVENTS)
+      move_control_px($fruit,450,633)
+    end if
+  end if
+  if (in_range($EVENT_NOTE,24,29))
+    play_note(112,20,0,-1)
+    if ($EVENT_NOTE=26)
+      $can_move_up := 1
+      while ($can_move_up=1)
+        if ($gameY-1>=0)
+          call check_colision
+          dec($gameY)
+          move_control_px($gamer,$gameX,$gameY)
+          wait($speed)
+        else
+          $can_move_up := 0
+        end if
+      end while
+    end if
+    if ($EVENT_NOTE=28)
+      $can_move_down := 1
+      while ($can_move_down=1)
+        if ($gameY+1<=370)
+          call check_colision
+          inc($gameY)
+          move_control_px($gamer,$gameX,$gameY)
+          wait($speed)
+        else
+          $can_move_down := 0
+        end if
+      end while
+    end if
+    if ($EVENT_NOTE=24)
+      $can_move_left := 1
+      while ($can_move_left=1)
+        if ($gameX-1>=0)
+          call check_colision
+          dec($gameX)
+          move_control_px($gamer,$gameX,$gameY)
+          wait($speed)
+        else
+          $can_move_left := 0
+        end if
+      end while
+    end if
+    if ($EVENT_NOTE=29)
+      $can_move_right := 1
+      while ($can_move_right=1)
+        if ($gameX+1<=603)
+          call check_colision
+          inc($gameX)
+          move_control_px($gamer,$gameX,$gameY)
+          wait($speed)
+        else
+          $can_move_right := 0
+        end if
+      end while
+    end if
+  end if
+  if (in_range($EVENT_NOTE,36,41) and ($shooting=0))
+    play_note(117,20,0,-1)
+    move_control_px($bullet,$gameX+8,$gameY+20)
+    if ($EVENT_NOTE=38)
+      $shooting := 1
+      $can_shoot_up := 1
+      $can_shoot_down := 0
+      $can_shoot_left := 0
+      $can_shoot_right := 0
+      set_control_par_str(get_ui_id($gamer),$CONTROL_PAR_PICTURE,"player_shoot_up")
+      $bullet_trace := $gameY+20
+      while ($bullet_trace>0 and ($can_shoot_up=1))
+        move_control_px($bullet,$gameX+8,$bullet_trace)
+        if ($gameX+8-($bombX+8)<15 and ($gameX+8-($bombX+8)>-15) and ($bullet_trace-($bombY+8)<25) and ($bullet_trace-($bombY+8)>-25))
+          $bombX := 633
+        end if
+        wait(1000)
+        dec($bullet_trace)
+      end while
+      $can_shoot_up := 0
+      $shooting := 0
+    end if
+    if ($EVENT_NOTE=40)
+      $shooting := 1
+      $can_shoot_up := 0
+      $can_shoot_down := 1
+      $can_shoot_left := 0
+      $can_shoot_right := 0
+      set_control_par_str(get_ui_id($gamer),$CONTROL_PAR_PICTURE,"player_shoot_down")
+      $bullet_trace := $gameY+20
+      while ($bullet_trace<400 and ($can_shoot_down=1))
+        move_control_px($bullet,$gameX+8,$bullet_trace)
+        if ($gameX+8-($bombX+8)<15 and ($gameX+8-($bombX+8)>-15) and ($bullet_trace-($bombY+8)<25) and ($bullet_trace-($bombY+8)>-25))
+          $bombX := 633
+        end if
+        wait(1000)
+        inc($bullet_trace)
+      end while
+      $can_shoot_down := 0
+      $shooting := 0
+    end if
+    if ($EVENT_NOTE=36)
+      $shooting := 1
+      $can_shoot_up := 0
+      $can_shoot_down := 0
+      $can_shoot_left := 1
+      $can_shoot_right := 0
+      set_control_par_str(get_ui_id($gamer),$CONTROL_PAR_PICTURE,"player_shoot_left")
+      $bullet_trace := $gameX+8
+      while ($bullet_trace>0 and ($can_shoot_left=1))
+        move_control_px($bullet,$bullet_trace,$gameY+20)
+        if ($bullet_trace-($bombX+8)<15 and ($bullet_trace-($bombX+8)>-15) and ($gameY+20-($bombY+8)<25) and ($gameY+20-($bombY+8)>-25))
+          $bombX := 633
+        end if
+        wait(1000)
+        dec($bullet_trace)
+      end while
+      $can_shoot_left := 0
+      $shooting := 0
+    end if
+    if ($EVENT_NOTE=41)
+      $shooting := 1
+      $can_shoot_up := 0
+      $can_shoot_down := 0
+      $can_shoot_left := 0
+      $can_shoot_right := 1
+      set_control_par_str(get_ui_id($gamer),$CONTROL_PAR_PICTURE,"player_shoot_right")
+      $bullet_trace := $gameX+8
+      while ($bullet_trace<630 and ($can_shoot_right=1))
+        move_control_px($bullet,$bullet_trace,$gameY+20)
+        if ($bullet_trace-($bombX+8)<15 and ($bullet_trace-($bombX+8)>-15) and ($gameY+20-($bombY+8)<25) and ($gameY+20-($bombY+8)>-25))
+          $bombX := 633
+        end if
+        wait(1000)
+        inc($bullet_trace)
+      end while
+      $can_shoot_right := 0
+      $shooting := 0
+    end if
+    move_control_px($bullet,400,603)
+    set_control_par_str(get_ui_id($gamer),$CONTROL_PAR_PICTURE,"player")
+  end if
+end on
+
+on release
+  if (in_range($EVENT_NOTE,24,29))
+    if ($EVENT_NOTE=26)
+      $can_move_up := 0
+    end if
+    if ($EVENT_NOTE=28)
+      $can_move_down := 0
+    end if
+    if ($EVENT_NOTE=24)
+      $can_move_left := 0
+    end if
+    if ($EVENT_NOTE=29)
+      $can_move_right := 0
+    end if
+  end if
+end on
+
+on controller
+  if ($CC_NUM=1)
+    $speed := 5000-(35*(%CC[$CC_NUM]+1))
+    message($speed)
+  end if
+end on
+
